@@ -7,10 +7,12 @@
 #include <unistd.h>
 
 #include "client_mpd.h"
+#include "input.h"
 #include "command.h"
 #include "main.h"
 
 #define TEXT_WIN_PADDING 1
+
 #define CTRL_KEY(c) ((c) & 037)
 
 WINDOW *Window_ui = NULL;
@@ -41,7 +43,7 @@ static void initialize_colors(void)
     init_pair(COL_ERR,      COLOR_RED,      COLOR_BLACK);
 }
 
-static void wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR)
+void wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR)
 {
 
     char str_fmt[8];
@@ -116,53 +118,6 @@ static bool has_resized(struct display *d)
     return (d->w != w || d->h != h);
 }
 
-static int freadline(char **str, const int block_len, struct display *d)
-{
-    int i = 0;
-    int ch = '\0';
-
-    for (int j = 0;; j += block_len) {
-        *str = realloc(*str, j + block_len);
-        while ((ch = wgetch(d->win_input))) {
-            switch (ch) {
-                case '\n':                                  /*   Newline    */
-                    wclear(d->win_input);
-                    wprint_blank_line(d->win_input, d->w, COL_CMD);
-                    (*str)[i++] = '\0';
-                    return i;
-                case '\t': 
-                    // TODO: Implement tab autocomplete
-                    break;
-                case CTRL_KEY('w'):                         /* Delete word  */
-                    while (i > 0) {
-                        (*str)[i--] = '\0';
-                        mvwprintw(d->win_input, 0, i, " ");
-                        wmove(d->win_input, 0, i);
-                        if ((*str)[i] == ' ') break;
-                    }
-                    break;
-                case KEY_BACKSPACE:
-                case 127:                                  /* Backspace */
-                    if (i > 0) {
-                        (*str)[i--] = '\0';
-                        mvwprintw(d->win_input, 0, i, " ");
-                        wmove(d->win_input, 0, i);
-                    }
-                    break;
-                default:                                  /* Regular character */
-                    if (i < (block_len + j)) {
-                        mvwprintw(d->win_input, 0, i, "%c", ch);
-                        (*str)[i] = ch;
-                        i++;
-                    } else if (i >= (block_len + j)) {
-                        break;
-                    }
-            }
-        }
-    }
-
-    return i;
-}
 
 void ui_print_error(enum Colors level, const char *fmt, ...)
 {
@@ -202,7 +157,9 @@ int main() {
 
         display_ui_elements(&display);
 
-        int x = freadline(&(display.input), 41, &display);
+        int x = freadline(&display, 40);
+        display.input_len = 0;
+
         if (x > 1) {
             wclear(Window_err); wrefresh(Window_err);
             process_input_command(display.input);

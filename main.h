@@ -6,6 +6,7 @@
 struct display {
     size_t w, h;
     char *input;
+    size_t input_len;
 
     WINDOW *win_ui;        /* Public access with Window_ui    */
     WINDOW *win_audio;     /* Public access with Window_audio */ 
@@ -27,5 +28,6 @@ enum Colors {
 
 void exit_clean(int status, struct mpd_connection *conn);
 void ui_print_error(enum Colors level, const char *fmt, ...);
+void wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR);
 
 #endif

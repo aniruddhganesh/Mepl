@@ -9,15 +9,14 @@
 
 #define CTRL_KEY(c) ((c) & 037)
 
-static int auto_complete_guess(const char *input, void **search_arr, size_t nsize)
+static int auto_complete_guess_cmds(const char *input)
 {
     int idx = -10;
     bool first_occurance = true;
 
-    for (int i = 0; *(search_arr + i) != NULL; i += nsize/8) {
-        char *s = (char *)(*(search_arr +i));
-        if (!strncmp(input, s, strlen(input))) {
-            idx = (first_occurance) ? i/8 : -10;
+    for (int i = 0; cmds[i].name != NULL; i++) {
+        if (!strncmp(input, cmds[i].name, strlen(input))) {
+            idx = (first_occurance) ? i : -10;
             first_occurance = false;
         }
     }
@@ -48,18 +47,19 @@ static void input_backspace(struct display *d)
 
 static void input_autocomplete(struct display *d, size_t cur_block)
 {
-    bool is_command = (strchr(d->input, ' ')) ? true : false;
-    void *search_arr = (is_command) ? NULL  : cmds;
-    size_t nsize_arr = (is_command) ? 0     : sizeof(*cmds);
+    bool is_command = (strchr(d->input, ' ') == NULL) ? true : false;
+    char *autocmp_str = NULL;
+    int idx;
 
-    // Temporary
-    if (!search_arr) return;
+    if (is_command) {
+         idx = auto_complete_guess_cmds(d->input);
+         autocmp_str = strdup(cmds[idx].name);
+    } else {
+        // TODO: Separate functions for cmd and arg autocomplete
+        return;
+    }
 
-    int byte_index = auto_complete_guess(d->input, search_arr, nsize_arr);
-    if (byte_index < 0) return;
-
-    char *autocmp_str = *((char **)search_arr + byte_index);
-    int autocmp_strlen = strlen(autocmp_str);
+    size_t autocmp_strlen = strlen(autocmp_str);
 
     if (autocmp_strlen > cur_block) return;
 
@@ -89,7 +89,8 @@ int freadline(struct display *d, const size_t block_len)
                     input_insert_newline(d);
                     return d->input_len;
                 case '\t':
-                    input_autocomplete(d, cur_block);
+                    if (d->input_len)
+                        input_autocomplete(d, cur_block);
                     break;
                 case CTRL_KEY('w'):
                     while (d->input_len > 0) {

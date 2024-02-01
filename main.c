@@ -137,10 +137,18 @@ void ui_print_error(enum Colors level, const char *fmt, ...)
 static void display_ui_elements(struct display *d)
 {
     wclear(Window_audio);
-    const char *s = get_current_playing();
-    if (s != NULL) 
-        mvwprintw(Window_audio, 0, (d->w - strlen(s))/2, "%s", s); 
+    const char *cur_song_name = get_current_playing();
+    const char *volume_str = get_volume_str();
+
+    int old_x = getcurx(d->win_input);
+
+    if (cur_song_name != NULL) 
+        mvwprintw(Window_audio, 0, (d->w - strlen(cur_song_name))/2, "%s", cur_song_name); 
+    if (volume_str != NULL) {
+        mvwprintw(Window_audio, 0, 0, "%s", volume_str);
+    }
     wrefresh(Window_audio);
+    wmove(d->win_input, old_x, 0);
 }
 
 int main() {
@@ -151,20 +159,24 @@ int main() {
     int i = 0;
     while (1) {
         if (has_resized(&display)) {
+            // For some reason we need 2 calls
             adjust_window_size(&display);
             adjust_window_size(&display);
         }
 
-        display_ui_elements(&display);
 
-        int x = freadline(&display, 40);
-        display.input_len = 0;
+        int x = freadline(&display, 50);
 
-        if (x > 1) {
+        if (x > 0) {
             wclear(Window_err); wrefresh(Window_err);
+
             process_input_command(display.input);
+            display.input_len = 0;
             memset(display.input, 0, x);
         }
+
+
+        display_ui_elements(&display);
         usleep(10000);
     }
 

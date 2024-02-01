@@ -75,12 +75,16 @@ int freadline(struct display *d, const size_t block_len)
     int ch = '\0';
     size_t cur_block = 0;
 
+    nodelay(d->win_input, true);
+
     for (cur_block = block_len ;; cur_block += block_len) {
         cur_block += block_len;
         d->input = realloc(d->input, cur_block);
 
-        while (d->input_len < cur_block && (ch = wgetch(d->win_input))) {
+        while ((ch = wgetch(d->win_input)) &&  d->input_len < cur_block) {
             switch (ch) {
+                case ERR:
+                    return -1;
                 case '\n':
                     input_insert_newline(d);
                     return d->input_len;

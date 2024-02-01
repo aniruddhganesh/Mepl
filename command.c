@@ -58,6 +58,9 @@ void cmd_song_prev(Token_t ts)
 
 void cmd_handle_print(Token_t ts)
 {
+    // TODO: Handle different types of print commands
+    if (ts.count > 1) 
+        return;
 }
 
 struct Cmd_t cmds[] = {

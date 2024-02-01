@@ -1,4 +1,6 @@
 #include <ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <mpd/client.h>
 #include <unistd.h>
@@ -78,6 +80,20 @@ const char *get_current_playing(void)
 
     return s;
 }
+
+const char *get_volume_str(void)
+{
+    int volume_perc = mpd_run_get_volume(conn);
+    if (volume_perc < 0) {
+        ui_print_error(COL_ERR, "Unable to get volume!");
+    }
+
+    char s[3];
+    sprintf(s, "%d%%", volume_perc);
+
+    return strdup(s);
+}
+
 
 int init_mpd_connection(void)
 {

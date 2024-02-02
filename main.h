@@ -21,7 +21,7 @@ extern WINDOW *Window_err;
 enum Colors {
     COL_CMD = 1,
     COL_AUD,
-    COL_AUD_INV,
+    COL_PROG,
     COL_INFO,
     COL_ERR,
 };

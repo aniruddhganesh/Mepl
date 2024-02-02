@@ -37,7 +37,8 @@ static void initialize_colors(void)
     start_color();
     /*         Name     fg              bg   */
     init_pair(COL_CMD,      COLOR_BLACK,    COLOR_GREEN);
-    init_pair(COL_AUD,      COLOR_GREEN,    COLOR_BLACK);
+    init_pair(COL_AUD,      COLOR_BLUE,    COLOR_BLACK);
+    init_pair(COL_PROG,     COLOR_MAGENTA,  COLOR_BLACK);
     init_pair(COL_INFO,     COLOR_BLUE,     COLOR_BLACK);
     init_pair(COL_ERR,      COLOR_RED,      COLOR_BLACK);
 }
@@ -165,6 +166,7 @@ static void display_ui_elements(struct display *d)
         mvwprintw(Window_audio, 0, d->w - 13, "[%.2d:%.2d/%.2d:%.2d]", 
                 elaps / 60, elaps % 60, dur / 60, dur % 60); 
         // Progress bar
+        wattron(Window_audio, COLOR_PAIR(COL_PROG));
         unsigned perc_elaps = ((float)elaps/(float)dur) * d->w;
 
         for (int i = 0; i < d->w; i++) {
@@ -176,10 +178,9 @@ static void display_ui_elements(struct display *d)
                 mvwprintw(Window_audio, 1, i, "-");
             }
         }
-
+        wattroff(Window_audio, COLOR_PAIR(COL_PROG));
     }
 
-    wattroff(Window_audio, COLOR_PAIR(COL_AUD));
     wrefresh(d->win_input);
     wrefresh(Window_audio);
 }

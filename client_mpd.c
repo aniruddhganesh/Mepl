@@ -29,14 +29,7 @@ static struct mpd_song *get_song(void)
     struct mpd_song *song;
     enum mpd_state state;
 
-    mpd_command_list_begin(conn, true);
-    {
-        mpd_send_status(conn);
-        mpd_send_current_song(conn);
-    }
-    mpd_command_list_end(conn);
-
-    status = mpd_recv_status(conn);
+    status = get_status();
     state = mpd_status_get_state(status);
 
     if (state == MPD_STATE_PLAY || state == MPD_STATE_PAUSE) {
@@ -70,27 +63,26 @@ char *get_current_playing(void)
 
 bool get_song_position_on_duration(unsigned *elaps, unsigned *dur)
 {
+    bool ret = false;
     struct mpd_song *song = get_song();
     struct mpd_status *status = get_status();
 
-    if (!song || !status) {
-        mpd_song_free(song);
-        mpd_status_free(status);
-        mpd_response_finish(conn);
-        return false;
+    if (song && status) {
+        if (dur) {
+            *dur = mpd_song_get_duration(song);
+        }
+        if (elaps) {
+            *elaps = mpd_status_get_elapsed_time(status);
+        }
+        ret = true;
     }
 
-    if (dur)
-        *dur = mpd_song_get_duration(song);
-    if (elaps)
-        *elaps = mpd_status_get_elapsed_time(status);
 
-    mpd_song_free(song);
-    mpd_status_free(status);
+    if (song) mpd_song_free(song);
+    if (status) mpd_status_free(status);
     mpd_response_finish(conn);
 
-
-    return true;
+    return ret;
 }
 
 char *get_volume_str(void)

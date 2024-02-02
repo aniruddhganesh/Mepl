@@ -36,12 +36,14 @@ static void input_insert_newline(struct display *d)
 {
     wclear(d->win_input);
     wprint_blank_line(d->win_input, d->w, COL_CMD);
-    d->input[d->input_len++] = '\0';
+    d->input[d->input_len] = '\0';
 }
 
 static void input_backspace(struct display *d)
 {
-    d->input[d->input_len--] = '\0';
+    if (d->input_len == 0) return;
+
+    d->input[--d->input_len] = '\0';
     mvwprintw(d->win_input, 0, d->input_len, " ");
     wmove(d->win_input, 0, d->input_len);
 }

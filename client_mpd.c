@@ -11,7 +11,6 @@
 
 struct mpd_connection *conn = NULL;
 
-    
 static struct mpd_status *get_status(void)
 {
     mpd_command_list_begin(conn, true);  

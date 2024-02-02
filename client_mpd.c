@@ -99,6 +99,7 @@ char *get_volume_str(void)
 }
 
 
+
 int init_mpd_connection(void)
 {
     conn = mpd_connection_new(NULL, 0, 0);

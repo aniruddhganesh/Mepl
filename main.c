@@ -11,7 +11,8 @@
 #include "command.h"
 #include "main.h"
 
-#define UREFRESH 70000
+#define UREFRESH 80000
+#define UI_PADDING 2 
 
 #define CTRL_KEY(c) ((c) & 037)
 
@@ -51,7 +52,6 @@ void wprint_line(WINDOW *win,const unsigned y, const unsigned width, enum Colors
     wattron(win, COLOR_PAIR(COLOR));
     mvwprintw(win, y, 0, str_fmt, c);
     attroff(COLOR_PAIR(COLOR));
-    wmove(win, y, 0);
 }
 void wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR)
 {
@@ -133,9 +133,34 @@ void ui_print_error(enum Colors level, const char *fmt, ...)
 
     wclear(Window_err);
     wattron(Window_err, COLOR_PAIR(level));
+
     mvwprintw(Window_err, 0, 0, "%s", msg) ;
+    free(msg);
+
     wattroff(Window_err, COLOR_PAIR(level));
     wrefresh(Window_err);
+}
+
+void ui_print_str(bool clear, const char *fmt, ...)
+{
+    /* C makes it 0 only first time */
+    static int i = 1;
+
+    va_list ap;
+    char *msg = malloc(strlen(fmt)*2);
+    va_start(ap, fmt);
+    vsprintf(msg, fmt, ap);
+    va_end(ap);
+
+    if (clear) {
+        i = 1;
+        wclear(Window_ui);
+    }
+
+    mvwprintw(Window_ui, i++, UI_PADDING, "%s", msg);
+    wrefresh(Window_ui);
+
+    free(msg);
 }
 
 static void display_ui_elements(struct display *d)
@@ -190,7 +215,6 @@ int main() {
     display = init_terminal_ui(&display);
     init_mpd_connection();
 
-    int i = 0;
     while (1) {
         if (has_resized(&display)) {
             // For some reason we need 2 calls
@@ -208,7 +232,6 @@ int main() {
             display.input_len = 0;
             memset(display.input, 0, x);
         }
-
 
         display_ui_elements(&display);
         usleep(UREFRESH);

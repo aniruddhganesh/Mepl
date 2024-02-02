@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +54,8 @@ static void input_autocomplete(struct display *d, size_t cur_block)
 
     if (is_command) {
          idx = auto_complete_guess_cmds(d->input);
+         if (idx < 0)
+             return;
          autocmp_str = strdup(cmds[idx].name);
     } else {
         // TODO: Separate functions for cmd and arg autocomplete
@@ -103,7 +106,10 @@ int freadline(struct display *d, const size_t block_len)
                         input_backspace(d);
                     break;
                 default:
-                    input_insert_char(d, ch);
+                    if (isprint(ch))
+                        input_insert_char(d, ch);
+                    else
+                        return d->input_len;
             }
         }
     }

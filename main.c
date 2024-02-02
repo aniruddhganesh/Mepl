@@ -11,7 +11,7 @@
 #include "command.h"
 #include "main.h"
 
-#define TEXT_WIN_PADDING 1
+#define UREFRESH 70000
 
 #define CTRL_KEY(c) ((c) & 037)
 
@@ -37,21 +37,24 @@ static void initialize_colors(void)
     start_color();
     /*         Name     fg              bg   */
     init_pair(COL_CMD,      COLOR_BLACK,    COLOR_GREEN);
-    init_pair(COL_AUD,      COLOR_BLACK,    COLOR_BLUE);
-    init_pair(COL_AUD_INV,  COLOR_BLUE,     COLOR_BLACK);
+    init_pair(COL_AUD,      COLOR_GREEN,    COLOR_BLACK);
     init_pair(COL_INFO,     COLOR_BLUE,     COLOR_BLACK);
     init_pair(COL_ERR,      COLOR_RED,      COLOR_BLACK);
 }
 
-void wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR)
-{
 
+void wprint_line(WINDOW *win,const unsigned y, const unsigned width, enum Colors COLOR, const char* c)
+{
     char str_fmt[8];
     snprintf(str_fmt, width, "%%%ds", width);
     wattron(win, COLOR_PAIR(COLOR));
-    mvwprintw(win, 0, 0, str_fmt, " ");
+    mvwprintw(win, y, 0, str_fmt, c);
     attroff(COLOR_PAIR(COLOR));
-    wmove(win, 0, 0);
+    wmove(win, y, 0);
+}
+void wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR)
+{
+    wprint_line(win, 0, width, COLOR, " ");
 }
 
 static void adjust_window_size(struct display *d)
@@ -137,18 +140,48 @@ void ui_print_error(enum Colors level, const char *fmt, ...)
 static void display_ui_elements(struct display *d)
 {
     wclear(Window_audio);
-    const char *cur_song_name = get_current_playing();
-    const char *volume_str = get_volume_str();
+    char *cur_song_name = get_current_playing();
+    char *volume_str = get_volume_str();
 
     int old_x = getcurx(d->win_input);
 
-    if (cur_song_name != NULL) 
-        mvwprintw(Window_audio, 0, (d->w - strlen(cur_song_name))/2, "%s", cur_song_name); 
-    if (volume_str != NULL) {
-        mvwprintw(Window_audio, 0, 0, "%s", volume_str);
+    wattron(Window_audio, COLOR_PAIR(COL_AUD));
+
+    if (cur_song_name) {
+        int align_middle = (d->w - strlen(cur_song_name)) / 2;
+        mvwprintw(Window_audio, 0, align_middle, "%s", cur_song_name); 
+        free(cur_song_name);
     }
+
+    if (volume_str)  {
+        mvwprintw(Window_audio, 0, 0, "%s", volume_str);
+        free(volume_str);
+    }
+
+    unsigned elaps;
+    unsigned dur;
+    if (get_song_position_on_duration(&elaps, &dur)) {
+        // "[mm:ss/mm:ss]" -> 13
+        mvwprintw(Window_audio, 0, d->w - 13, "[%.2d:%.2d/%.2d:%.2d]", 
+                elaps / 60, elaps % 60, dur / 60, dur % 60); 
+        // Progress bar
+        unsigned perc_elaps = ((float)elaps/(float)dur) * d->w;
+
+        for (int i = 0; i < d->w; i++) {
+            if (i < perc_elaps) {
+                mvwprintw(Window_audio, 1, i, "=");
+            } else if (i == perc_elaps) {
+                mvwprintw(Window_audio, 1, i, ">");
+            } else {
+                mvwprintw(Window_audio, 1, i, "-");
+            }
+        }
+
+    }
+
+    wattroff(Window_audio, COLOR_PAIR(COL_AUD));
+    wrefresh(d->win_input);
     wrefresh(Window_audio);
-    wmove(d->win_input, old_x, 0);
 }
 
 int main() {
@@ -177,7 +210,7 @@ int main() {
 
 
         display_ui_elements(&display);
-        usleep(10000);
+        usleep(UREFRESH);
     }
 
     exit_clean(0, NULL);

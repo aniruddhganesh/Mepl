@@ -1,43 +1,30 @@
-#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mpd/client.h>
 #include <unistd.h>
+
+#include <ncurses.h>
+#include <mpd/client.h>
 
 #include "client_mpd.h"
 #include "main.h"
 
 struct mpd_connection *conn = NULL;
 
-
-const char *fget_current_playing(void)
+    
+static struct mpd_status *get_status(void)
 {
-    mpd_command_list_begin(conn, true);
-
-    mpd_send_status(conn);
-    mpd_send_current_song(conn);
-    mpd_command_list_end(conn);
-
-    struct mpd_status *status = mpd_recv_status(conn);
-    enum mpd_state state = mpd_status_get_state(status);
-    if (state == MPD_STATE_PLAY || state == MPD_STATE_PAUSE) {
-        mpd_response_next(conn);
-        struct mpd_song *song = mpd_recv_song(conn);
-
-        char *s = strdup(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
-        mpd_song_free(song);
-        mpd_status_free(status);
-        mpd_response_finish(conn);
-        return s;
+    mpd_command_list_begin(conn, true);  
+    {
+        mpd_send_status(conn);                
+        mpd_send_current_song(conn);          
     }
+    mpd_command_list_end(conn);           
 
-    mpd_response_finish(conn);
-
-    return NULL;
+    return mpd_recv_status(conn);
 }
 
-struct mpd_song *get_song(void)
+static struct mpd_song *get_song(void)
 {
     struct mpd_status *status;
     struct mpd_song *song;
@@ -67,7 +54,7 @@ struct mpd_song *get_song(void)
 }
 
 
-const char *get_current_playing(void)
+char *get_current_playing(void)
 {
     struct mpd_song *song;
     char *s = NULL;
@@ -81,7 +68,33 @@ const char *get_current_playing(void)
     return s;
 }
 
-const char *get_volume_str(void)
+
+bool get_song_position_on_duration(unsigned *elaps, unsigned *dur)
+{
+    struct mpd_song *song = get_song();
+    struct mpd_status *status = get_status();
+
+    if (!song || !status) {
+        mpd_song_free(song);
+        mpd_status_free(status);
+        mpd_response_finish(conn);
+        return false;
+    }
+
+    if (dur)
+        *dur = mpd_song_get_duration(song);
+    if (elaps)
+        *elaps = mpd_status_get_elapsed_time(status);
+
+    mpd_song_free(song);
+    mpd_status_free(status);
+    mpd_response_finish(conn);
+
+
+    return true;
+}
+
+char *get_volume_str(void)
 {
     int volume_perc = mpd_run_get_volume(conn);
     if (volume_perc < 0) {

@@ -46,18 +46,20 @@ static struct mpd_song *get_song(void)
 }
 
 
-char *get_current_playing(void)
+char *getstr_current_playing(enum mpd_tag_type tag)
 {
     struct mpd_song *song;
-    char *s = NULL;
+    const char *s = NULL;
     song = get_song();
     if (song) {
-        s = strdup(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
+        if ((s = mpd_song_get_tag(song, tag, 0))){
+            s = strdup(mpd_song_get_tag(song, tag, 0));
+        }
         mpd_song_free(song);
         mpd_response_finish(conn);
     }
 
-    return s;
+    return (char *)s;
 }
 
 
@@ -85,11 +87,12 @@ bool get_song_position_on_duration(unsigned *elaps, unsigned *dur)
     return ret;
 }
 
-char *get_volume_str(void)
+char *getstr_volume(void)
 {
     int volume_perc = mpd_run_get_volume(conn);
     if (volume_perc < 0) {
         ui_print_error(COL_ERR, "Unable to get volume!");
+        return NULL;
     }
 
     char s[3];

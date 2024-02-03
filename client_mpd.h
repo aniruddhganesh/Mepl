@@ -4,8 +4,8 @@
 #include <mpd/client.h>
 
 int init_mpd_connection(void);
-char *get_current_playing(void);
-char *get_volume_str(void);
+char *getstr_current_playing(enum mpd_tag_type tag);
+char *getstr_volume(void);
 bool get_song_position_on_duration(unsigned *elaps, unsigned *dur);
 unsigned get_song_duration(void);
 

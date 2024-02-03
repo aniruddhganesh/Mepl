@@ -166,8 +166,8 @@ void ui_print_str(bool clear, const char *fmt, ...)
 static void display_ui_elements(struct display *d)
 {
     wclear(Window_audio);
-    char *cur_song_name = get_current_playing();
-    char *volume_str = get_volume_str();
+    char *cur_song_name = getstr_current_playing(MPD_TAG_TITLE);
+    char *volume_str = getstr_volume();
 
     int old_x = getcurx(d->win_input);
 

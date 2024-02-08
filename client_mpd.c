@@ -58,23 +58,57 @@ static struct mpd_song *get_song(void)
     return NULL;
 }
 
-
-char *getstr_current_playing(enum mpd_tag_type tag)
+char *getstr_song_info(struct mpd_song *song, enum mpd_tag_type tag)
 {
-    struct mpd_song *song;
     const char *s = NULL;
-    song = get_song();
     if (song) {
-        if ((s = mpd_song_get_tag(song, tag, 0))){
+        if ((s = mpd_song_get_tag(song, tag, 0))) {
             s = strdup(mpd_song_get_tag(song, tag, 0));
         }
-        mpd_song_free(song);
         mpd_response_finish(conn);
     }
 
     return (char *)s;
 }
 
+char *getstr_current_playing(enum mpd_tag_type tag)
+{
+    struct mpd_song *song;
+    const char *s = NULL;
+    song = get_song();
+
+    if (song) {
+        s = getstr_song_info(song, tag);
+        mpd_song_free(song);
+    }
+
+    return (char *)s;
+}
+
+struct mpd_song **get_song_queue(void)
+{
+    struct mpd_song **song_arr = NULL;
+    struct mpd_entity *entity;
+
+    if (!mpd_send_list_queue_meta(conn)) {
+        return NULL;
+    }
+
+    size_t i = 0;
+    while ((entity = mpd_recv_entity(conn))) {
+        song_arr = realloc(song_arr, sizeof(struct mpd_song *) * (i+2)); // One extra for NULL
+
+        const struct mpd_song *song;
+        song = mpd_entity_get_song(entity);
+        song_arr[i++] = mpd_song_dup(song);
+
+        mpd_entity_free(entity);
+    }
+
+    mpd_response_finish(conn);
+    song_arr[i] = NULL;
+    return song_arr;
+}
 
 bool get_song_position_on_duration(unsigned *elaps, unsigned *dur)
 {

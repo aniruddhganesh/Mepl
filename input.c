@@ -98,6 +98,7 @@ int freadline(struct display *d, const size_t block_len)
                         input_autocomplete(d, cur_block);
                     break;
                 case CTRL_KEY('w'):
+                case CTRL_KEY(KEY_BACKSPACE): case CTRL_KEY(127):
                     while (d->input_len > 0) {
                         input_backspace(d);
                         if (d->input[d->input_len] == ' ') break;

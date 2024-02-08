@@ -38,7 +38,8 @@ static void initialize_colors(void)
     start_color();
     /*         Name     fg              bg   */
     init_pair(COL_CMD,      COLOR_BLACK,    COLOR_GREEN);
-    init_pair(COL_AUD,      COLOR_BLUE,    COLOR_BLACK);
+    init_pair(COL_AUD,      COLOR_BLUE,     COLOR_BLACK);
+    init_pair(COL_UI,       COLOR_GREEN,    COLOR_BLACK);
     init_pair(COL_PROG,     COLOR_MAGENTA,  COLOR_BLACK);
     init_pair(COL_INFO,     COLOR_BLUE,     COLOR_BLACK);
     init_pair(COL_ERR,      COLOR_RED,      COLOR_BLACK);
@@ -141,10 +142,19 @@ void ui_print_error(enum Colors level, const char *fmt, ...)
     wrefresh(Window_err);
 }
 
+void ui_clear_scrn(void)
+{
+    wclear(Window_ui);
+    box(Window_ui, 0, 0);
+    wrefresh(Window_ui);
+    return;
+}
+
 void ui_print_str(bool clear, const char *fmt, ...)
 {
     /* C makes it 0 only first time */
     static int i = 1;
+
 
     va_list ap;
     char *msg = malloc(strlen(fmt)*2);
@@ -153,12 +163,14 @@ void ui_print_str(bool clear, const char *fmt, ...)
     va_end(ap);
 
     if (clear) {
-        i = 1;
-        wclear(Window_ui);
+        i = 0;
+        ui_clear_scrn();
     }
 
+    wattron(Window_ui, COLOR_PAIR(COL_UI));
     mvwprintw(Window_ui, i++, UI_PADDING, "%s", msg);
     wrefresh(Window_ui);
+    wattroff(Window_ui, COLOR_PAIR(COL_UI));
 
     free(msg);
 }

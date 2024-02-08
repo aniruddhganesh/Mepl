@@ -1,5 +1,4 @@
-#include <mpd/list.h>
-#include <mpd/response.h>
+#include <mpd/song.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,11 +55,52 @@ void cmd_song_prev(Token_t ts)
     }
 }
 
+static void print_queue(struct mpd_song **queue)
+{
+    char *song_title = NULL;
+    char *song_artist = NULL ;
+    char *song_uri = NULL;
+
+    ui_print_str(true, "\r");
+
+    for (size_t i = 0; queue[i] != NULL; i++) {
+        song_title = getstr_song_info(queue[i], MPD_TAG_TITLE);
+        song_artist = getstr_song_info(queue[i], MPD_TAG_ARTIST);
+
+        if (!song_title || !song_artist) {
+            ui_print_error(COL_ERR, "Unable to get song info");
+            return;
+        }
+
+        char *song_title_c = utf8_to_cstr(song_title);
+        char *song_artist_c = utf8_to_cstr(song_artist);
+
+        
+        ui_print_str(false, "%s", song_title_c);
+
+        free(song_title);
+        free(song_artist);
+        free(song_title_c);
+        free(song_artist_c);
+    }
+}
+
 void cmd_handle_print(Token_t ts)
 {
     // TODO: Handle different types of print commands
-    if (ts.count > 1) 
+    if (ts.count > 1) {
+        ReportErrorRunningCmd;
         return;
+    }
+
+    struct mpd_song **queue = get_song_queue();
+    
+    if (!queue) { 
+        ReportErrorRunningCmd;
+        return;
+    }
+    print_queue(queue);
+    free(queue);
 }
 
 struct Cmd_t cmds[] = {
@@ -69,6 +109,8 @@ struct Cmd_t cmds[] = {
     "resume",       cmd_song_resume,
     "next",         cmd_song_next,
     "previous",     cmd_song_prev,
+#include <mpd/list.h>
+#include <mpd/response.h>
     "print",        cmd_handle_print,
     NULL,           NULL,
 };

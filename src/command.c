@@ -1,3 +1,4 @@
+#include <curses.h>
 #include <mpd/song.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +60,6 @@ static void print_queue(struct mpd_song **queue)
 {
     char *song_title = NULL;
     char *song_artist = NULL ;
-    char *song_uri = NULL;
 
     char *current_song_title = getstr_current_playing(MPD_TAG_TITLE);
 
@@ -77,8 +77,15 @@ static void print_queue(struct mpd_song **queue)
         char *song_title_c = utf8_to_cstr(song_title);
         char *song_artist_c = utf8_to_cstr(song_artist);
 
-        
-        ui_print_str(false, "%s", song_title_c);
+    
+        if (!strcmp(current_song_title, song_title)) {
+            wattron(Window_ui, COLOR_PAIR(COL_UI_ALT));
+            ui_print_str(false, "%s", song_title_c);
+        } else {
+            wattron(Window_ui, COLOR_PAIR(COL_UI));
+            ui_print_str(false, "%s", song_title_c);
+        }
+
 
         free(song_title);
         free(song_artist);
@@ -106,15 +113,13 @@ void cmd_handle_print(Token_t ts)
 }
 
 struct Cmd_t cmds[] = {
-    "exit",         cmd_exit_zero,
-    "pause",        cmd_song_pause,
-    "resume",       cmd_song_resume,
-    "next",         cmd_song_next,
-    "previous",     cmd_song_prev,
-#include <mpd/list.h>
-#include <mpd/response.h>
-    "print",        cmd_handle_print,
-    NULL,           NULL,
+    {    "exit",         cmd_exit_zero,     },
+    {    "pause",        cmd_song_pause,    },
+    {    "resume",       cmd_song_resume,   },
+    {    "next",         cmd_song_next,     },
+    {    "previous",     cmd_song_prev,     },
+    {    "print",        cmd_handle_print,  },
+    {    NULL,           NULL,              },
 };
 
 /* Tokenisation and Processing */

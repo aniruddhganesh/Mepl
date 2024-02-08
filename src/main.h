@@ -22,10 +22,12 @@ enum Colors {
     COL_CMD = 1,
     COL_AUD,
     COL_UI,
+    COL_UI_ALT,
     COL_PROG,
     COL_INFO,
     COL_ERR,
 };
+
 
 void exit_clean(int status, struct mpd_connection *conn);
 void ui_clear_scrn(void);

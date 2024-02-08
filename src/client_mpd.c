@@ -142,7 +142,7 @@ char *getstr_volume(void)
         return NULL;
     }
 
-    char s[3];
+    char s[16];
     sprintf(s, "%d%%", volume_perc);
 
     return strdup(s);

@@ -12,6 +12,10 @@ struct Cmd_t {
     void (*func)(Token_t ts);
 };
 
+enum PrintCmds {
+    PRINT_QUEUE = 1,
+};
+
 extern struct Cmd_t cmds[];
 
 void process_input_command(const char *input);

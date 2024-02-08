@@ -40,6 +40,7 @@ static void initialize_colors(void)
     init_pair(COL_CMD,      COLOR_BLACK,    COLOR_GREEN);
     init_pair(COL_AUD,      COLOR_BLUE,     COLOR_BLACK);
     init_pair(COL_UI,       COLOR_GREEN,    COLOR_BLACK);
+    init_pair(COL_UI_ALT,   COLOR_BLUE,     COLOR_BLACK);
     init_pair(COL_PROG,     COLOR_MAGENTA,  COLOR_BLACK);
     init_pair(COL_INFO,     COLOR_BLUE,     COLOR_BLACK);
     init_pair(COL_ERR,      COLOR_RED,      COLOR_BLACK);
@@ -167,10 +168,8 @@ void ui_print_str(bool clear, const char *fmt, ...)
         ui_clear_scrn();
     }
 
-    wattron(Window_ui, COLOR_PAIR(COL_UI));
     mvwprintw(Window_ui, i++, UI_PADDING, "%s", msg);
     wrefresh(Window_ui);
-    wattroff(Window_ui, COLOR_PAIR(COL_UI));
 
     free(msg);
 }
@@ -180,8 +179,6 @@ static void display_ui_elements(struct display *d)
     wclear(Window_audio);
     char *cur_song_name = getstr_current_playing(MPD_TAG_TITLE);
     char *volume_str = getstr_volume();
-
-    int old_x = getcurx(d->win_input);
 
     wattron(Window_audio, COLOR_PAIR(COL_AUD));
 

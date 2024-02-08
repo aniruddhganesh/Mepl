@@ -1,2 +1,2 @@
-main: main.c client_mpd.c command.c input.c
-	$(CC) main.c client_mpd.c command.c input.c -lmpdclient -lncurses -Wall -g -o ./bin/maple
+main: src/main.c src/client_mpd.c src/command.c src/input.c
+	$(CC) src/main.c src/client_mpd.c src/command.c src/input.c -lmpdclient -lncurses -Wall -g -o ./bin/maple

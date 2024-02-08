@@ -61,6 +61,8 @@ static void print_queue(struct mpd_song **queue)
     char *song_artist = NULL ;
     char *song_uri = NULL;
 
+    char *current_song_title = getstr_current_playing(MPD_TAG_TITLE);
+
     ui_print_str(true, "\r");
 
     for (size_t i = 0; queue[i] != NULL; i++) {

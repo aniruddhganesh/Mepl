@@ -15,65 +15,72 @@
 
 #define InvalidArgumentsAfter(x) if (ts.count > x) {                \
     ui_print_error(COL_INFO, "Invalid Argument: %s", ts.tokens[x]); \
-    return; }
+    return false; }                                                 
 
-#define ReportErrorRunningCmd ui_print_error(COL_ERR, "ERR: Cannot run '%s'", ts.tokens[0]);
 
 /* Dumb public commands */
-void cmd_exit_zero(Token_t ts)
+bool cmd_exit_zero(Token_t ts)
 {
     InvalidArgumentsAfter(1);
     exit_clean(0, NULL);
+    return true;
 }
 
-void cmd_song_pause(Token_t ts)
+bool cmd_song_pause(Token_t ts)
 {
     InvalidArgumentsAfter(1);
-    if (!mpd_run_pause(conn, true))
-        ReportErrorRunningCmd;
+    return mpd_run_pause(conn, true);
 }
 
-void cmd_song_resume(Token_t ts)
+bool cmd_song_resume(Token_t ts)
 {
     InvalidArgumentsAfter(1);
-    if (!mpd_run_play(conn))
-        ReportErrorRunningCmd
+    return mpd_run_play(conn);
 }
 
-void cmd_song_next(Token_t ts)
+bool cmd_song_next(Token_t ts)
 {
     InvalidArgumentsAfter(1);
     if (!mpd_run_next(conn)) {
         mpd_connection_clear_error(conn);
-        ReportErrorRunningCmd;
+        return false;
     }
+    return true;
 }
 
-void cmd_song_prev(Token_t ts)
+bool cmd_song_prev(Token_t ts)
 {
     InvalidArgumentsAfter(1);
     if (!mpd_run_previous(conn)) {
         mpd_connection_clear_error(conn);
-        ReportErrorRunningCmd;
+        return false;
     }
+    return true;
 }
 
 
-void cmd_print(Token_t ts)
+bool cmd_print(Token_t ts)
 {
     // TODO: Handle different types of print commands
     if (ts.count > 1) {
-        ReportErrorRunningCmd;
-        return;
+        return false;
     }
 
     display.ui_state = PRINT_QUEUE;
+    return true;
 }
 
-void cmd_cls(Token_t ts)
+bool cmd_cls(Token_t ts)
 {
     InvalidArgumentsAfter(1);
     display.ui_state = PRINT_NONE;
+    return true;
+}
+
+bool cmd_stop(Token_t ts)
+{
+    InvalidArgumentsAfter(1);
+    return mpd_run_stop(conn);
 }
 
 struct Cmd_t cmds[] = {
@@ -84,6 +91,7 @@ struct Cmd_t cmds[] = {
     {    "previous",     cmd_song_prev,     },
     {    "print",        cmd_print,         },
     {    "cls",          cmd_cls,           },
+    {    "stop",         cmd_stop,          },
     {    NULL,           NULL,              },
 };
 
@@ -132,7 +140,9 @@ void process_input_command(const char *input)
     
     for (size_t i = 0; cmds[i].name != NULL; i++) {
         if (!strcmp(tok_in.tokens[0], cmds[i].name)) {
-            cmds[i].func(tok_in);
+            if (!cmds[i].func(tok_in)) {
+                ui_print_error(COL_ERR, "ERR: Cannot run '%s'", tok_in.tokens[0]);
+            }
             free_tokens(&tok_in);
             return;
         }

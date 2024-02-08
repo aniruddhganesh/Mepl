@@ -9,7 +9,7 @@ typedef struct Token_t {
 
 struct Cmd_t {
     char *name;
-    void (*func)(Token_t ts);
+    bool (*func)(Token_t ts);
 };
 
 extern struct Cmd_t cmds[];

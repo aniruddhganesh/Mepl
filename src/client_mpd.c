@@ -7,6 +7,7 @@
 #include <mpd/client.h>
 
 #include "client_mpd.h"
+#include "ui.h"
 #include "main.h"
 
 struct mpd_connection *conn = NULL;

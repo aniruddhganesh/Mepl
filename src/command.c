@@ -10,6 +10,7 @@
 #include "command.h"
 #include "client_mpd.h"
 #include "main.h"
+#include "ui.h"
 
 #define InvalidArgumentsAfter(x) if (ts.count > x) {                \
     ui_print_error(COL_INFO, "Invalid Argument: %s", ts.tokens[x]); \
@@ -79,10 +80,10 @@ static void print_queue(struct mpd_song **queue)
 
     
         if (!strcmp(current_song_title, song_title)) {
-            wattron(Window_ui, COLOR_PAIR(COL_UI_ALT));
+            wattron(display.win_ui, COLOR_PAIR(COL_UI_ALT));
             ui_print_str(false, "%s", song_title_c);
         } else {
-            wattron(Window_ui, COLOR_PAIR(COL_UI));
+            wattron(display.win_ui, COLOR_PAIR(COL_UI));
             ui_print_str(false, "%s", song_title_c);
         }
 

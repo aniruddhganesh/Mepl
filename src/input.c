@@ -6,6 +6,7 @@
 #include <ncurses.h>
 
 #include "main.h"
+#include "ui.h"
 #include "command.h"
 
 #define CTRL_KEY(c) ((c) & 037)
@@ -35,7 +36,7 @@ static void input_insert_char(struct display *d, char ch)
 static void input_insert_newline(struct display *d)
 {
     wclear(d->win_input);
-    wprint_blank_line(d->win_input, d->w, COL_CMD);
+    ui_wprint_blank_line(d->win_input, d->w, COL_CMD);
     d->input[d->input_len] = '\0';
 }
 

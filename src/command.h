@@ -12,7 +12,8 @@ struct Cmd_t {
     void (*func)(Token_t ts);
 };
 
-enum PrintCmds {
+enum Print_State {
+    PRINT_NONE,
     PRINT_QUEUE = 1,
 };
 

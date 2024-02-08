@@ -107,6 +107,10 @@ struct mpd_song **get_song_queue(void)
     }
 
     mpd_response_finish(conn);
+    if (!i) {
+        return NULL;
+    }
+
     song_arr[i] = NULL;
     return song_arr;
 }

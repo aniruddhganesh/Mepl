@@ -11,6 +11,7 @@
 #include "client_mpd.h"
 #include "main.h"
 #include "ui.h"
+#include "print.h"
 
 #define InvalidArgumentsAfter(x) if (ts.count > x) {                \
     ui_print_error(COL_INFO, "Invalid Argument: %s", ts.tokens[x]); \
@@ -57,45 +58,8 @@ void cmd_song_prev(Token_t ts)
     }
 }
 
-static void print_queue(struct mpd_song **queue)
-{
-    char *song_title = NULL;
-    char *song_artist = NULL ;
 
-    char *current_song_title = getstr_current_playing(MPD_TAG_TITLE);
-
-    ui_print_str(true, "\r");
-
-    for (size_t i = 0; queue[i] != NULL; i++) {
-        song_title = getstr_song_info(queue[i], MPD_TAG_TITLE);
-        song_artist = getstr_song_info(queue[i], MPD_TAG_ARTIST);
-
-        if (!song_title || !song_artist) {
-            ui_print_error(COL_ERR, "Unable to get song info");
-            return;
-        }
-
-        char *song_title_c = utf8_to_cstr(song_title);
-        char *song_artist_c = utf8_to_cstr(song_artist);
-
-    
-        if (!strcmp(current_song_title, song_title)) {
-            wattron(display.win_ui, COLOR_PAIR(COL_UI_ALT));
-            ui_print_str(false, "%s", song_title_c);
-        } else {
-            wattron(display.win_ui, COLOR_PAIR(COL_UI));
-            ui_print_str(false, "%s", song_title_c);
-        }
-
-
-        free(song_title);
-        free(song_artist);
-        free(song_title_c);
-        free(song_artist_c);
-    }
-}
-
-void cmd_handle_print(Token_t ts)
+void cmd_print(Token_t ts)
 {
     // TODO: Handle different types of print commands
     if (ts.count > 1) {
@@ -103,14 +67,13 @@ void cmd_handle_print(Token_t ts)
         return;
     }
 
-    struct mpd_song **queue = get_song_queue();
-    
-    if (!queue) { 
-        ReportErrorRunningCmd;
-        return;
-    }
-    print_queue(queue);
-    free(queue);
+    display.ui_state = PRINT_QUEUE;
+}
+
+void cmd_cls(Token_t ts)
+{
+    InvalidArgumentsAfter(1);
+    display.ui_state = PRINT_NONE;
 }
 
 struct Cmd_t cmds[] = {
@@ -119,7 +82,8 @@ struct Cmd_t cmds[] = {
     {    "resume",       cmd_song_resume,   },
     {    "next",         cmd_song_next,     },
     {    "previous",     cmd_song_prev,     },
-    {    "print",        cmd_handle_print,  },
+    {    "print",        cmd_print,         },
+    {    "cls",          cmd_cls,           },
     {    NULL,           NULL,              },
 };
 

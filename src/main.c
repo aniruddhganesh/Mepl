@@ -98,6 +98,8 @@ static struct display init_terminal_ui(void)
     display.win_audio = display.win_audio;
     timeout(0);
 
+    display.ui_state = PRINT_NONE;
+
     return display;
 }
 
@@ -183,6 +185,7 @@ int main() {
         }
 
         display_ui_elements();
+        print_run_print_state(display.ui_state);
         usleep(UREFRESH);
     }
 

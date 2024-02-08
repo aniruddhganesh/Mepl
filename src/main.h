@@ -4,6 +4,7 @@
 #include <mpd/client.h>
 
 #include "command.h"
+#include "print.h"
 
 struct display {
     size_t w, h;
@@ -18,8 +19,6 @@ struct display {
 };
 
 extern struct display display;
-
-
 
 void exit_clean(int status, struct mpd_connection *conn);
 

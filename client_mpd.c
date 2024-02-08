@@ -11,6 +11,19 @@
 
 struct mpd_connection *conn = NULL;
 
+char *utf8_to_cstr(const char *utf8_str)
+{
+    size_t utf8_len = strlen(utf8_str);
+
+    char *cstr = malloc(utf8_len + 1);
+    if (!cstr)
+        return NULL;
+
+    strncpy(cstr, utf8_str, utf8_len);
+    cstr[utf8_len] = '\0';
+    return cstr;
+}
+
 static struct mpd_status *get_status(void)
 {
     mpd_command_list_begin(conn, true);  

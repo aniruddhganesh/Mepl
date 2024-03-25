@@ -86,6 +86,13 @@ char *getstr_current_playing(enum mpd_tag_type tag)
     return (char *)s;
 }
 
+void queue_free(struct mpd_song **q)
+{
+    for (size_t i = 0; q[i] != NULL; i++) {
+        mpd_song_free(q[i]);
+    }
+}
+
 struct mpd_song **get_song_queue(void)
 {
     struct mpd_song **song_arr = NULL;

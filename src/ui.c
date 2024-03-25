@@ -43,9 +43,9 @@ void ui_print_str(bool clear, const char *fmt, ...)
     /* C makes it 0 only first time */
     static int i = 1;
 
+    char msg[128];
 
     va_list ap;
-    char *msg = malloc(strlen(fmt)*2);
     va_start(ap, fmt);
     vsprintf(msg, fmt, ap);
     va_end(ap);
@@ -57,8 +57,6 @@ void ui_print_str(bool clear, const char *fmt, ...)
 
     mvwprintw(display.win_ui, i++, 2, "%s", msg);
     wrefresh(display.win_ui);
-
-    free(msg);
 }
 
 void ui_clear_scrn(void)
@@ -68,6 +66,3 @@ void ui_clear_scrn(void)
     wrefresh(display.win_ui);
     return;
 }
-
-
-

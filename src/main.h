@@ -16,6 +16,8 @@ struct display {
     WINDOW *win_audio;     /* Public access with Window_audio */ 
     WINDOW *win_input;
     WINDOW *win_err;       /* Public access with Window_err   */
+
+    struct mpd_song **queue;
 };
 
 extern struct display display;

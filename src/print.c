@@ -15,8 +15,8 @@ static bool print_none(void)
 
 static bool print_queue(void)
 {
-    struct mpd_song **queue = get_song_queue();
-    if (!queue) {
+    display.queue = get_song_queue();
+    if (!display.queue) {
         ui_print_error(COL_ERR, "Unable to get queue");
         return false;
     }
@@ -28,35 +28,30 @@ static bool print_queue(void)
 
     ui_print_str(true, "\r");
 
-    for (size_t i = 0; queue[i] != NULL; i++) {
-        song_title = getstr_song_info(queue[i], MPD_TAG_TITLE);
-        song_artist = getstr_song_info(queue[i], MPD_TAG_ARTIST);
+    for (size_t i = 0; display.queue[i] != NULL; i++) {
+        song_title = getstr_song_info(display.queue[i], MPD_TAG_TITLE);
+        song_artist = getstr_song_info(display.queue[i], MPD_TAG_ARTIST);
 
         if (!song_title || !song_artist) {
             ui_print_error(COL_ERR, "Unable to get song info");
             return false;
         }
 
-        char *song_title_c = utf8_to_cstr(song_title);
-        char *song_artist_c = utf8_to_cstr(song_artist);
-
         if (current_song_title && !strcmp(current_song_title, song_title)) {
             wattron(display.win_ui, COLOR_PAIR(COL_UI_ALT));
-            ui_print_str(false, "%s", song_title_c);
+            ui_print_str(false, "%s", song_title);
             wattroff(display.win_ui, COLOR_PAIR(COL_UI_ALT));
         } else {
             wattron(display.win_ui, COLOR_PAIR(COL_UI));
-            ui_print_str(false, "%s", song_title_c);
+            ui_print_str(false, "%s", song_title);
             wattroff(display.win_ui, COLOR_PAIR(COL_UI));
         }
 
 
         free(song_title);
         free(song_artist);
-        free(song_title_c);
-        free(song_artist_c);
     }
-    free(queue);
+    queue_free(display.queue);
 
     return true;
 }

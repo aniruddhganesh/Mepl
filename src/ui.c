@@ -5,14 +5,15 @@
 #include "ui.h"
 #include "main.h"
 
+
 void ui_wprint_line(WINDOW *win, const unsigned y, 
-        const unsigned width, enum Colors COLOR, const char* c)
+		const unsigned width, enum Colors COLOR, const char* c)
 {
-    char str_fmt[8];
-    snprintf(str_fmt, width, "%%%ds", width);
-    wattron(win, COLOR_PAIR(COLOR));
-    mvwprintw(win, y, 0, str_fmt, c);
-    attroff(COLOR_PAIR(COLOR));
+	char str_fmt[8];
+	snprintf(str_fmt, width, "%%%ds", width);
+	wattron(win, COLOR_PAIR(COLOR));
+	mvwprintw(win, y, 0, str_fmt, c);
+	attroff(COLOR_PAIR(COLOR));
 }
 
 void ui_wprint_blank_line(WINDOW *win, const unsigned width, enum Colors COLOR)
